@@ -45,7 +45,7 @@ jobs:
           terraform_version: 1.6.6
 
       - name: Terraform Init
-        run: terraform init
+        run: terraform init -backend-config="bucket=${{ vars.HWC_OBS_BUCKET_NAME }}"
 
       - name: Terraform Format
         run: terraform fmt -check
