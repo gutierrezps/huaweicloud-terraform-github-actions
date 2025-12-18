@@ -1,5 +1,7 @@
 # Huawei Cloud Terraform with GitHub Actions
 
+🌐 **Language**: **English** | [Português](./README.pt.md)
+
 <!-- markdownlint-disable MD033 -->
 <a href="https://www.huaweicloud.com/intl/en-us" target="_blank">
   <img src="https://console-static.huaweicloud.com/static/authui/20210202115135/public/custom/images/logo-en.svg"
@@ -43,6 +45,8 @@ In your GitHub repository:
     | ------------------------ | ----------------------------------- |
     | `HWC_SECRET_KEY`         | Huawei Cloud Secret Access Key (SK) |
 
+![GitHub repository variables](./img/github-repository-variables.png)
+
 ## Deployment flow
 
 Whenever code is pushed to the `main` branch, GitHub Actions will:
@@ -58,23 +62,22 @@ After reviewing the plan, if you agree with it, you need to manually run the
 workflow in order to provision the infrastructure in Huawei Cloud:
 
 1. Go to **Actions** tab;
-2. Select **Terraform Huawei Cloud** action;
+2. Select **Terraform Apply** action;
 3. Click on **Run workflow** on the right side;
 4. Under **Approve Terraform Apply?**, select **apply** and click
    **Run workflow**;
 5. Infrastructure changes will be applied automatically.
 
-![Running Worflow manually in Actions tab](./img/run-workflow.png)
+![Running "Terraform Apply" worflow manually in Actions tab](./img/run-workflow.png)
 
 ![Infrastructure changes being applied automatically by GitHub Actions](./img/terraform-apply.png)
 
 ## Destroying the infrastructure
 
 If you wish to destroy the infrastructure through GitHub Actions, manually run
-the **Terraform Destroy (Huawei Cloud)** workflow. Select the **skip** option
-when running the workflow to preview what will be done, and then if you agree
-with the plan, select the **apply** option when manually running the workflow
-again.
+the **Terraform Destroy** workflow. Select the **skip** option when running the
+workflow to preview what will be done, and then if you agree with the plan,
+select the **apply** option when manually running the workflow again.
 
 ![Infrastructure destroyed automatically by GitHub Actions](./img/terraform-destroy.png)
 
