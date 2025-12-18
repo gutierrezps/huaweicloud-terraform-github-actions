@@ -7,7 +7,8 @@ terraform {
   }
 
   backend "s3" {
-    bucket = "github-actions-state-file"
+    # Add -backend-config="bucket=obs-bucket-name" when running terraform command
+    # bucket = "obs-bucket-name"
     key    = "terraform.tfstate"
     region = "sa-brazil-1"
     endpoints = {
@@ -24,22 +25,25 @@ terraform {
 
 provider "huaweicloud" {
   region     = var.region
-  access_key = var.access_key
-  secret_key = var.secret_key
+  access_key = var.hwc_access_key
+  secret_key = var.hwc_secret_key
 }
 
-variable "access_key" {
-  type = string
+variable "hwc_access_key" {
+  type        = string
+  description = "Access Key (AK) of your Huawei Cloud account or IAM User"
 }
 
-variable "secret_key" {
-  type      = string
-  sensitive = true
+variable "hwc_secret_key" {
+  type        = string
+  sensitive   = true
+  description = "Secret Access Key (SK) of your Huawei Cloud account or IAM User"
 }
 
 variable "region" {
-  type    = string
-  default = "la-north-2"
+  type        = string
+  description = "Region where cloud resources will be deployed by default"
+  default     = "sa-brazil-1"
 }
 
 resource "huaweicloud_vpc" "main" {
