@@ -47,6 +47,7 @@ provider "huaweicloud" {
 }
 
 resource "huaweicloud_vpc" "main" {
-  name = "vpc-github-actions"
-  cidr = "192.168.0.0/16"
+  region = var.region
+  name   = "vpc-github-actions"
+  cidr   = "192.168.0.0/16"
 }
