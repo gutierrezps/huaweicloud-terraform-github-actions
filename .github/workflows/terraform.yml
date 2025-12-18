@@ -6,7 +6,7 @@ on:
     branches: [ "main" ]
   workflow_dispatch:
     inputs:
-      approve:
+      is_approved:
         description: "Approve Terraform Apply?"
         required: true
         default: "no"
@@ -60,10 +60,10 @@ jobs:
       - name: Test Terraform Apply condition
         if: github.event_name == 'workflow_dispatch'
         run: |
-          echo "Selected approve option: ${{ github.event.inputs.approve }}"
-          echo "Is the Terraform Plan approved? ${{ github.event.inputs.approve == 'yes' }}"
+          echo "Selected approve option: ${{ github.event.inputs.is_approved }}"
+          echo "Is the Terraform Plan approved? ${{ github.event.inputs.is_approved }}"
 
       # Apply only if manually approved during manual workflow execution
       - name: Terraform Apply
-        if: github.event_name == 'workflow_dispatch' && github.event.inputs.approve == 'yes'
+        if: github.event_name == 'workflow_dispatch' && github.event.inputs.is_approved
         run: terraform apply -auto-approve tfplan
