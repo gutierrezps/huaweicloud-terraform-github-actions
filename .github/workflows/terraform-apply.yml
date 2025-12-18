@@ -53,15 +53,10 @@ jobs:
       - name: Terraform Validate
         run: terraform validate
 
-      - name: Terraform Plan (preview)
-        if: github.event_name != 'workflow_dispatch'
-        run: terraform plan
-
-      - name: Terraform Plan (manual)
-        if: github.event_name == 'workflow_dispatch'
+      - name: Terraform Plan
         run: terraform plan -out=tfplan
 
       # Apply only if manually approved during manual workflow execution
       - name: Terraform Apply
-        if: github.event_name == 'workflow_dispatch' && github.event.inputs.approve == 'apply'
+        if: github.event.inputs.approve == 'apply'
         run: terraform apply -auto-approve tfplan
