@@ -57,13 +57,11 @@ jobs:
         if: github.event_name == 'workflow_dispatch'
         run: terraform plan -out=tfplan
       
-      - name: Show selected approve option
-        if: github.event_name == 'workflow_dispatch'
-        run: echo "Selected approve option: ${{ github.event.inputs.approve }}"
-
       - name: Test Terraform Apply condition
         if: github.event_name == 'workflow_dispatch'
-        run: echo "Is the Terraform Plan approved? ${{ github.event.inputs.approve == 'yes' }}"
+        run: |
+          echo "Selected approve option: ${{ github.event.inputs.approve }}"
+          echo "Is the Terraform Plan approved? ${{ github.event.inputs.approve == 'yes' }}"
 
       # Apply only if manually approved during manual workflow execution
       - name: Terraform Apply
