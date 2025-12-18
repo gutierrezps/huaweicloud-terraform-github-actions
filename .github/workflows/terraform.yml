@@ -6,14 +6,14 @@ on:
     branches: [ "main" ]
   workflow_dispatch:
     inputs:
-      is_approved:
+      approve:
         description: "Approve Terraform Apply?"
         required: true
-        default: "no"
+        default: "skip"
         type: choice
         options:
-          - no
-          - yes
+          - skip
+          - apply
 
 jobs:
   terraform:
@@ -24,10 +24,14 @@ jobs:
       pull-requests: write
       
     env:
-      TF_VAR_access_key: ${{ secrets.AWS_ACCESS_KEY_ID }}
-      TF_VAR_secret_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      # Terraform variables' values, used to provision Huawei Cloud resources
+      TF_VAR_hwc_access_key: ${{ secrets.HWC_ACCESS_KEY }}
+      TF_VAR_hwc_secret_key: ${{ secrets.HWC_SECRET_KEY }}
+
+      # used to configure a Huawei Cloud OBS bucket as remote state backend (S3-compatible)
+      # Reference: https://registry.terraform.io/providers/huaweicloud/huaweicloud/latest/docs/guides/remote-state-backend
+      AWS_ACCESS_KEY_ID: ${{ secrets.HWC_ACCESS_KEY }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.HWC_SECRET_KEY }}
       AWS_RESPONSE_CHECKSUM_VALIDATION: when_required
       AWS_REQUEST_CHECKSUM_CALCULATION: when_required
 
@@ -51,19 +55,16 @@ jobs:
         
       - name: Terraform Plan (preview)
         if: github.event_name != 'workflow_dispatch'
-        run: terraform plan
+        run: |
+          terraform plan -backend-config="bucket=${{ secrets.HWC_OBS_BUCKET_NAME }}"
 
       - name: Terraform Plan (manual)
         if: github.event_name == 'workflow_dispatch'
-        run: terraform plan -out=tfplan
-      
-      - name: Test Terraform Apply condition
-        if: github.event_name == 'workflow_dispatch'
         run: |
-          echo "Selected approve option: ${{ github.event.inputs.is_approved }}"
-          echo "Is the Terraform Plan approved? ${{ github.event.inputs.is_approved }}"
+          terraform plan -out=tfplan -backend-config="bucket=${{ secrets.HWC_OBS_BUCKET_NAME }}"
 
       # Apply only if manually approved during manual workflow execution
       - name: Terraform Apply
-        if: github.event_name == 'workflow_dispatch' && github.event.inputs.is_approved
-        run: terraform apply -auto-approve tfplan
+        if: github.event_name == 'workflow_dispatch' && github.event.inputs.approve == "apply"
+        run: |
+          terraform apply -auto-approve tfplan -backend-config="bucket=${{ secrets.HWC_OBS_BUCKET_NAME }}"
