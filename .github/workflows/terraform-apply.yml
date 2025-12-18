@@ -1,0 +1,67 @@
+name: Terraform Apply
+
+on:
+  pull_request:
+  push:
+    branches: [ "main" ]
+  workflow_dispatch:
+    inputs:
+      approve:
+        description: "Approve Terraform Apply?"
+        required: true
+        default: "skip"
+        type: choice
+        options:
+          - skip
+          - apply
+
+jobs:
+  terraform:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      pull-requests: write
+
+    env:
+      # Terraform variables' values, used to provision Huawei Cloud resources
+      TF_VAR_hwc_access_key: ${{ vars.HWC_ACCESS_KEY }}
+      TF_VAR_hwc_secret_key: ${{ secrets.HWC_SECRET_KEY }}
+
+      # used to configure a Huawei Cloud OBS bucket as remote state backend (S3-compatible)
+      # Reference: https://registry.terraform.io/providers/huaweicloud/huaweicloud/latest/docs/guides/remote-state-backend
+      AWS_ACCESS_KEY_ID: ${{ vars.HWC_ACCESS_KEY }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.HWC_SECRET_KEY }}
+      AWS_RESPONSE_CHECKSUM_VALIDATION: when_required
+      AWS_REQUEST_CHECKSUM_CALCULATION: when_required
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.6.6
+
+      - name: Terraform Init
+        run: terraform init -backend-config="bucket=${{ vars.HWC_OBS_BUCKET_NAME }}"
+
+      - name: Terraform Format
+        run: terraform fmt -check
+
+      - name: Terraform Validate
+        run: terraform validate
+
+      - name: Terraform Plan (preview)
+        if: github.event_name != 'workflow_dispatch'
+        run: terraform plan
+
+      - name: Terraform Plan (manual)
+        if: github.event_name == 'workflow_dispatch'
+        run: terraform plan -out=tfplan
+
+      # Apply only if manually approved during manual workflow execution
+      - name: Terraform Apply
+        if: github.event_name == 'workflow_dispatch' && github.event.inputs.approve == 'apply'
+        run: terraform apply -auto-approve tfplan
