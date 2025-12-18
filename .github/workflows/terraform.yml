@@ -65,6 +65,6 @@ jobs:
 
       # Apply only if manually approved during manual workflow execution
       - name: Terraform Apply
-        if: github.event_name == 'workflow_dispatch' && github.event.inputs.approve == "apply"
+        if: github.event_name == 'workflow_dispatch' && github.event.inputs.approve == 'apply'
         run: |
           terraform apply -auto-approve tfplan -backend-config="bucket=${{ secrets.HWC_OBS_BUCKET_NAME }}"
