@@ -48,9 +48,8 @@ jobs:
       - name: Terraform Validate
         run: terraform validate
 
-      # Run plan on PRs
-      - name: Terraform Plan (PR)
-        if: github.event_name == 'pull_request'
+      - name: Terraform Plan (preview)
+        if: github.event_name != 'workflow_dispatch'
         env:
           TF_VAR_access_key: ${{ secrets.AWS_ACCESS_KEY_ID }}
           TF_VAR_secret_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
@@ -60,9 +59,9 @@ jobs:
           AWS_REQUEST_CHECKSUM_CALCULATION: when_required
         run: terraform plan
         
-      # Plan on main push
-      - name: Terraform Plan (main)
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+      # Plan on manual workflow trigger
+      - name: Terraform Plan (workflow trigger)
+        if: github.event_name == 'workflow_dispatch'
         env:
           TF_VAR_access_key: ${{ secrets.AWS_ACCESS_KEY_ID }}
           TF_VAR_secret_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
