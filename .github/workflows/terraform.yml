@@ -25,12 +25,12 @@ jobs:
       
     env:
       # Terraform variables' values, used to provision Huawei Cloud resources
-      TF_VAR_hwc_access_key: ${{ secrets.HWC_ACCESS_KEY }}
+      TF_VAR_hwc_access_key: ${{ vars.HWC_ACCESS_KEY }}
       TF_VAR_hwc_secret_key: ${{ secrets.HWC_SECRET_KEY }}
 
       # used to configure a Huawei Cloud OBS bucket as remote state backend (S3-compatible)
       # Reference: https://registry.terraform.io/providers/huaweicloud/huaweicloud/latest/docs/guides/remote-state-backend
-      AWS_ACCESS_KEY_ID: ${{ secrets.HWC_ACCESS_KEY }}
+      AWS_ACCESS_KEY_ID: ${{ vars.HWC_ACCESS_KEY }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.HWC_SECRET_KEY }}
       AWS_RESPONSE_CHECKSUM_VALIDATION: when_required
       AWS_REQUEST_CHECKSUM_CALCULATION: when_required
@@ -56,15 +56,15 @@ jobs:
       - name: Terraform Plan (preview)
         if: github.event_name != 'workflow_dispatch'
         run: |
-          terraform plan -backend-config="bucket=${{ secrets.HWC_OBS_BUCKET_NAME }}"
+          terraform plan -backend-config="bucket=${{ vars.HWC_OBS_BUCKET_NAME }}"
 
       - name: Terraform Plan (manual)
         if: github.event_name == 'workflow_dispatch'
         run: |
-          terraform plan -out=tfplan -backend-config="bucket=${{ secrets.HWC_OBS_BUCKET_NAME }}"
+          terraform plan -out=tfplan -backend-config="bucket=${{ vars.HWC_OBS_BUCKET_NAME }}"
 
       # Apply only if manually approved during manual workflow execution
       - name: Terraform Apply
         if: github.event_name == 'workflow_dispatch' && github.event.inputs.approve == 'apply'
         run: |
-          terraform apply -auto-approve tfplan -backend-config="bucket=${{ secrets.HWC_OBS_BUCKET_NAME }}"
+          terraform apply -auto-approve tfplan -backend-config="bucket=${{ vars.HWC_OBS_BUCKET_NAME }}"
