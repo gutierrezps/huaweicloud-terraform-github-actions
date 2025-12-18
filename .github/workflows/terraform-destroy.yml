@@ -44,8 +44,8 @@ jobs:
       - name: Terraform Init
         run: terraform init -backend-config="bucket=${{ vars.HWC_OBS_BUCKET_NAME }}"
 
-      - name: Terraform Destroy (preview)
-        run: terraform apply -destroy
+      - name: Terraform Destroy plan
+        run: terraform plan -destroy -out=tfplan
 
       - name: Terraform Destroy (approved)
         if: github.event_name == 'workflow_dispatch' && github.event.inputs.approve == 'apply'
