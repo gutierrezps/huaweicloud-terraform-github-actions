@@ -22,6 +22,14 @@ jobs:
     permissions:
       contents: read
       pull-requests: write
+      
+    env:
+      TF_VAR_access_key: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      TF_VAR_secret_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_RESPONSE_CHECKSUM_VALIDATION: when_required
+      AWS_REQUEST_CHECKSUM_CALCULATION: when_required
 
     steps:
       - name: Checkout repository
@@ -33,13 +41,6 @@ jobs:
           terraform_version: 1.6.6
 
       - name: Terraform Init
-        env:
-          TF_VAR_access_key: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          TF_VAR_secret_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_RESPONSE_CHECKSUM_VALIDATION: when_required
-          AWS_REQUEST_CHECKSUM_CALCULATION: when_required
         run: terraform init
 
       - name: Terraform Format
@@ -47,38 +48,11 @@ jobs:
 
       - name: Terraform Validate
         run: terraform validate
-
-      - name: Terraform Plan (preview)
-        if: github.event_name != 'workflow_dispatch'
-        env:
-          TF_VAR_access_key: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          TF_VAR_secret_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_RESPONSE_CHECKSUM_VALIDATION: when_required
-          AWS_REQUEST_CHECKSUM_CALCULATION: when_required
-        run: terraform plan
         
-      # Plan on manual workflow trigger
-      - name: Terraform Plan (workflow trigger)
-        if: github.event_name == 'workflow_dispatch'
-        env:
-          TF_VAR_access_key: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          TF_VAR_secret_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_RESPONSE_CHECKSUM_VALIDATION: when_required
-          AWS_REQUEST_CHECKSUM_CALCULATION: when_required
+      - name: Terraform Plan
         run: terraform plan -out=tfplan
 
-      # Apply only if manually approved
+      # Apply only if manually approved during manual workflow execution
       - name: Terraform Apply
-        if: github.event_name == 'workflow_dispatch' && github.event.inputs.approve == 'yes'
-        env:
-          TF_VAR_access_key: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          TF_VAR_secret_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_RESPONSE_CHECKSUM_VALIDATION: when_required
-          AWS_REQUEST_CHECKSUM_CALCULATION: when_required
+        if: github.event.inputs.approve == 'yes'
         run: terraform apply -auto-approve tfplan
